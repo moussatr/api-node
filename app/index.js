@@ -16,7 +16,7 @@ mongoose.connect('mongodb://root:root@mongo:27017/b3?authSource=admin', {
 }
 )
 const classesRouter = require('./routes/classes');
-const StudentRouter = require('./routes/Students');
+const StudentRouter = require('./routes/students');
 
 app.get("/", (req, res) => {
     res.status(200).send('<h1>Hello World !</h1>');
