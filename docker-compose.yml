@@ -8,8 +8,10 @@ services:
       dockerfile: ./node/Dockerfile
     ports:
       - 4500:4500
-    volumes:
-      - ./app:/app 
+    volumes :
+      - ./app:/app
+    environment:
+      MONGO_URL: mongodb://root:root@mongo:27017/b3?authSource=admin
 
   mongo:
     image: mongo
@@ -19,9 +21,8 @@ services:
       - ./mongo:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root 
+      MONGO_INITDB_ROOT_PASSWORD: root
 
-  
   mongo-express:
     image: mongo-express
     ports:
@@ -32,6 +33,4 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: root
-      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/ 
-
- 
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
