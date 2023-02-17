@@ -1,89 +1,118 @@
-const express = require('express');
-const student = require('../models/student');
-const studentModel = require('../models/student')
+const express = require('express')
+//const { v4: uuidv4 } = require('uuid')
+const classeModel = require('../models/classe')
 
-let router = express.Router();
+let router = express.Router()
 
-router.post('/', async (req, res) => {
-    const {firstname, lastname} = req.body;
+router.post('/', async (request, response) =>{
+    const {name} = request.body
 
-    if (typeof firstname === 'undefined' || typeof lastname === 'undefined') {
-        return res.status(500).json({
-            "msg": "vous devez entrer un nom et un prénom !"
+    if(typeof name === "undefined" || name == "") {
+        return response.status(500).json({
+            msg: "Veuillez saisir un nom valide"
         })
-
     }
+
+    try{
+        let classe = await classeModel.create({
+            name
+        })
+        return response.status(200).json(classe)
+    }catch(error){
+        return response.status(500).json({
+            msg: error
+        })
+    }
+});
+
+router.post('/add-student', async (request, response) => {
+    const {studentId, classeId} = request.body;
+
 
     try {
-        let student = await studentModel.create({
-            firstname,
-            lastname
-        });
-
-        return res.status(200).json(student);
+       const classe = await classeModel.findOneAndUpdate({
+            _id: classeId
+        }, {
+            $addToSet: {
+                students: [studentId]
+            }
+        }, {
+            new: true
+        
+        }).populate('students')
+    
+        return response.status(200).json(classe);
     } catch (error) {
-        return res.status(500).json({
-            "msg": "il y a eu une erreur: " + error
-        });
+        return response.status(500).json(error)
+    }
+});
+
+router.get('/', async (request, response) => {
+    try {
+        let classes = await classeModel.find()
+        return response.status(200).json(classes)
+    } catch (error) {
+        return response.status(500).json(error)
+    }
+});
+
+router.get('/', async (request, response) => {
+    try {
+        let classes = await classeModel.find()
+
+        .populate({path: 'students', select: '-password'})
+        return response.status(200).json(classes)
+    } catch (error) {
+        return response.status(500).json(error)
+    }
+});
+
+
+
+router.get('/:id', async (request, response) => {
+    const {id} = request.params
+
+    try {
+        let classe = await classeModel.findById(id)
+        return response.status(200).json(classe)
+    }catch (error) {
+        return response.status(500).json(error)
     }
 
+    
 });
 
 router.delete('/:id', async (request,response) => {
     const {id} = request.params
 
     try {
-        let student = await studentModel.findByIdAndRemove(id)
+        let classe = await classeModel.findByIdAndRemove(id)
         return response.status(200).json({
-            msg: "Elève bien supprimée !"
+            msg: "Classe bien supprimée !"
         })
     }catch (error) {
         return response.status(500).json(error)
     }
-})
+});
 
 router.put('/:id', async (request,response) =>{
     const {id} = request.params
-    const {firstname, lastname} = request.body
+    const {name} = request.body
 
     try {
-        let student = await studentModel.findByIdAndUpdate(id,
+        let classe = await classeModel.findByIdAndUpdate(id,
             {
-                firstname, lastname
+                name
             },{
                 new: true
             })
         return response.status(200).json({
-            msg: "Elève bien modifiée !"
+            msg: "Classe bien modifiée !"
         })
     }catch (error) {
         return response.status(500).json(error)
     }
 
-})
+});
 
-router.get('/:id', async (request, response) => {
-    const {id} = request.params
-
-    try {
-        let student = await studentModel.findById(id)
-        return response.status(200).json(student)
-    }catch (error) {
-        return response.status(500).json(error)
-    }
-
-
-})
-
-router.get('/', async (request, response) => {
-    try {
-        let students = await studentModel.find()
-        return response.status(200).json(students)
-    } catch (error) {
-        return response.status(500).json(error)
-    }
-})
-
-
-
-module.exports = router;
+module.exports = router
